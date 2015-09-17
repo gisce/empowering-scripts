@@ -15,7 +15,7 @@ def get_ots_contract(contract):
     ot401 = caching.OT401Caching(e, m)
     
     for ot in (ot101, ot103, ot201, ot401):
-        for year in (201400, 201500):
+        for year in (201300, 201400, 201500):
             for month in range(1, 13):
                 ts = year + month
                 ot.pull_contract(contract, ts)
