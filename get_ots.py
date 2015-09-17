@@ -19,3 +19,8 @@ def get_ots_contract(contract):
             for month in range(1, 13):
                 ts = year + month
                 ot.pull_contract(contract, ts)
+
+def get_ots_all_contracts():
+    contracts = e.contracts().multiget()
+    for contract in contracts['_items']:
+        get_ots_contract(contract['contractId'])
