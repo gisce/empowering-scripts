@@ -25,13 +25,8 @@ def get_ot_caching(ot):
 @job(queue, connection=redis_conn, timeout=3600)
 def get_ots_contract(contract):
     for ot in ('ot101', 'ot103', 'ot201', 'ot401'):
-        for year in (201300, 201400, 201500):
-            for month in range(1, 13):
-                ts = year + month
-                if ts > 201508:
-                    break
-                ot_obj = get_ot_caching(ot)
-                ot_obj.pull_contract(contract, ts)
+        ot_obj = get_ot_caching(ot)
+        ot_obj.pull_contract(contract, ts)
 
 def get_ots_all_contracts():
     contracts = e.contracts().multiget()
