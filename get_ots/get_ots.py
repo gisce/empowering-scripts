@@ -33,3 +33,6 @@ def get_ots_all_contracts():
     for contract in contracts['_items']:
         get_ots_contract.delay(contract['contractId'])
 
+def get_ots_contracts(contract_ids):
+    for contract_id in contract_ids:
+        get_ots_contract.delay(contract_id)
