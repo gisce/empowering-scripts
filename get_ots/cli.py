@@ -1,9 +1,6 @@
 import logging
-from get_ots import get_ots_contracts as  get_ots_contracts_orig,
-                    get_ots_all_contracts as get_ots_all_contracts_orig
+from get_ots import get_ots_contracts as  get_ots_contracts_orig, get_ots_all_contracts as get_ots_all_contracts_orig
 import click
-
-logging.basicConfig(level=logging.DEBUG)
 
 def list_from_file(path):
     import csv
@@ -12,18 +9,19 @@ def list_from_file(path):
         reader = csv.reader(csvfile)
         return [row[0] for row in reader]
 
-@click.group
-def emp(log_level):
-    logging.basicConfig(level=log_level)
+@click.group()
+def emp():
+    logging.basicConfig(level=logging.DEBUG)
 
 @emp.command()
 def get_ots_all_contracts():
     get_ots_all_contracts_orig()
 
 @emp.command()
-@click.argument('filename', type=click.Patch(exists=True))
+@click.argument('filename', type=click.Path(exists=True))
 def get_ots_contracts(filename):
     get_ots_contracts_orig(list_from_file(filename))
 
 if __name__ == '__main__':
+    emp(obj={})
     get_ots_all_contracts_orig()
