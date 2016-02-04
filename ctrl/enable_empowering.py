@@ -19,7 +19,6 @@ def list_from_file(path):
 def get_partners(obj, contract_ids):
     partner_ids = []
     for contract in obj.GiscedataPolissa.read(contract_ids, ['titular', 'pagador']):
-        partner_ids.append(contract['titular'][0])
         partner_ids.append(contract['pagador'][0])
     return partner_ids
 
@@ -60,7 +59,7 @@ def enable_partner(ctx, filename):
 @erp.command()
 @click.pass_context
 @click.argument('filename', type=click.Path(exists=True))
-def enable_contract(ctx, ids, filename):
+def enable_contract(ctx, filename):
     enable_emp_contract(ctx.obj['erp'], list_from_file(filename))
 
 if __name__ == '__main__':
