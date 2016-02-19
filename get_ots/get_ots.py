@@ -26,10 +26,13 @@ def get_ot_caching(ot):
 def get_ots_contract(contract):
     for ot in ('ot101', 'ot103', 'ot201', 'ot401'):
         ot_obj = get_ot_caching(ot)
-        ot_obj.pull_contract(contract, ts)
+        ot_obj.pull_contract(contract)
 
 def get_ots_all_contracts():
     contracts = e.contracts().multiget()
     for contract in contracts['_items']:
         get_ots_contract.delay(contract['contractId'])
 
+def get_ots_contracts(contract_ids):
+    for contract_id in contract_ids:
+        get_ots_contract.delay(contract_id)

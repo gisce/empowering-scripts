@@ -19,8 +19,7 @@ def list_from_file(path):
 def get_partners(obj, contract_ids):
     partner_ids = []
     for contract in obj.GiscedataPolissa.read(contract_ids, ['titular', 'pagador']):
-        partner_ids += contract['titular'][0]
-        partner_ids += contract['pagador'][0]
+        partner_ids.append(contract['pagador'][0])
     return partner_ids
 
 def enable_emp_partner(obj, partner_ids):
@@ -28,7 +27,7 @@ def enable_emp_partner(obj, partner_ids):
 
 def enable_emp_contract(obj, contract_ids):
     partner_ids = get_partners(obj, contract_ids)
-    enable_emp_partner(list(set(partner_ids)))
+    enable_emp_partner(obj, list(set(partner_ids)))
     obj.GiscedataPolissa.write(contract_ids, {'empowering_profile_id':1})
 
 @click.group()
@@ -55,13 +54,13 @@ def erp(ctx):
 @click.pass_context
 @click.argument('filename', type=click.Path(exists=True))
 def enable_partner(ctx, filename):
-    enable_emp_partner(ctx.obj['erp'], list_from_file(filename)
+    enable_emp_partner(ctx.obj['erp'], list_from_file(filename))
 
 @erp.command()
 @click.pass_context
 @click.argument('filename', type=click.Path(exists=True))
-def enable_contract(ctx, ids, filename):
-    enable_emp_contract(ctx.obj['erp'], list_from_file(filename)
+def enable_contract(ctx, filename):
+    enable_emp_contract(ctx.obj['erp'], list_from_file(filename))
 
 if __name__ == '__main__':
     erp(obj={'config': config})
