@@ -20,6 +20,7 @@ def get_partners(obj, contracts_id):
     partners_id = []
     for contract in obj.GiscedataPolissa.read(contracts_id, ['titular', 'pagador']):
         partners_id.append(contract['pagador'][0])
+        partners_id.append(contract['titular'][0])
     return partners_id
 
 def enable_emp_partner(obj, partners_id):
