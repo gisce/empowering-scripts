@@ -31,13 +31,16 @@ def updated(obj, contract_id):
     log_ids = log_obj.search([('contract_id', '=', contract_id),
                               ('channel_id', '=', 1),
                               ('sent', '=', True)])
+    if not available(obj, contract_id, period):
+        return None
+
     if not log_ids:
-        return True
+        return period
+
     # TODO: period id utilization instead of last_generated
-    last_report = log_obj.read(log_ids[-1], ['last_generated'])['last_generated']
+    last_report = log_obj.read(log_ids[0], ['last_generated'])['last_generated']
     return period \
-        if (todatetime(last_measure, False) > todatetime(last_report, True) and 
-        available(obj, contract_id, period)) else None
+        if (todatetime(last_measure, False) > todatetime(last_report, True)) else None
   
 def pending(obj, contracts):
     contract_obj = obj['erp'].model('giscedata.polissa')
@@ -46,13 +49,20 @@ def pending(obj, contracts):
                      ('cups.empowering_quarantine', '=', 1)]
 
     if contracts is not None:
+        if not isinstance(contracts, list):
+            contracts = [contracts]
         search_params.append(('name', 'in', contracts))
     return [(contract_id, updated(obj, contract_id))
         for contract_id in contract_obj.search(search_params)] 
 
 def deliver(obj, contracts):
     contract_obj = obj['erp'].model('giscedata.polissa')
-    for period, contract_ids in groupby_period(pending(obj, contracts)):
-        if not period or not contract_ids:
-            continue
-        contract_obj.send_empowering_report(contract_ids, context={'period': period})
+    groups = zip(*(iter(contracts),)*50)
+    for idx,group in enumerate(groups[:1]):
+	print '%d/%d' % (idx,len(groups))
+        group = list(group)
+        for period, contract_ids in groupby_period(pending(obj, group)):
+            if not period or not contract_ids:
+                continue
+            print 'Period: %s Contracts: %s' % (period, contract_ids)
+            contract_obj.send_empowering_report(contract_ids, context={'period': period})
