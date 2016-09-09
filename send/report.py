@@ -18,7 +18,10 @@ def available(obj, contract_id, period):
         return False
   
     for ot in OTS:
-        if not emp_obj.get(contract, token, ot, period):
+        try:
+            if not emp_obj.get(contract, token, ot, period):
+                return False
+        except Exception as e:
             return False
     return True
 
@@ -27,20 +30,21 @@ def updated(obj, contract_id):
     log_obj = obj['erp'].model('empowering.customize.profile.channel.log')
 
     last_measure = contract_obj.read(contract_id, ['data_ultima_lectura'])['data_ultima_lectura']
+    last_period = toperiod(todatetime(last_measure, False))
     period = toperiod(todatetime(last_measure, False) - relativedelta(months=1))
-    log_ids = log_obj.search([('contract_id', '=', contract_id),
-                              ('channel_id', '=', 1),
-                              ('sent', '=', True)])
-    if not available(obj, contract_id, period):
+
+    if not available(obj, contract_id, last_period):
         return None
 
-    if not log_ids:
-        return period
-
-    # TODO: period id utilization instead of last_generated
-    last_report = log_obj.read(log_ids[0], ['last_generated'])['last_generated']
-    return period \
-        if (todatetime(last_measure, False) > todatetime(last_report, True)) else None
+    log_ids = log_obj.search([('contract_id', '=', contract_id),
+                              ('period', '=', period),
+                              ('channel_id', '=', 1),
+                              ('sent', '=', True)])
+    if log_ids:
+        return None
+    if not available(obj, contract_id, period):
+        return None
+    return period
   
 def pending(obj, contracts):
     contract_obj = obj['erp'].model('giscedata.polissa')
