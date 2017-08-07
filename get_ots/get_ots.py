@@ -23,14 +23,17 @@ def get_ot_caching(ot):
     return getattr(caching, attr)(e, m)
 
 @job(queue, connection=redis_conn, timeout=3600)
-def get_ots_contract(contract=[], period=None):
+def get_ots(ot, contract=[], period=None):
+    ot_obj = get_ot_caching(ot)
+    ot_obj.pull_contract(contract, period)
+
+def get_all_ots(contracts=[], period=None):
     for ot in ('ot101', 'ot103', 'ot201', 'ot401'):
-        ot_obj = get_ot_caching(ot)
-        ot_obj.pull_contract(contract, period)
+        get_ots.delay(ot, contracts, period)
 
 def get_ots_all_contracts(period=None):
-    get_ots_contract.delay(period=period)
+    get_all_ots(period=period)
 
 def get_ots_contracts(contract_ids, period=None):
-    for contract_id in contract_ids:
-        get_ots_contract.delay(contract_id, period)
+    for contract in contract_ids:
+        get_all_ots(contract, period)
