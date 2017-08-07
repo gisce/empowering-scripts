@@ -32,6 +32,11 @@ def updated(obj, contract_id):
     last_measure = contract_obj.read(contract_id, ['data_ultima_lectura'])['data_ultima_lectura']
     last_period = toperiod(todatetime(last_measure, False))
     period = toperiod(todatetime(last_measure, False) - relativedelta(months=1))
+    twomonths = datetime.now() - relativedelta(months=2)
+    onemonths = datetime.now() - relativedelta(months=1)
+    if toperiod(twomonths) <= toperiod(todatetime(last_measure, False)):
+        last_period = toperiod(onemonths)
+        period = toperiod(twomonths)
 
     if not available(obj, contract_id, last_period):
         return None
@@ -62,7 +67,7 @@ def pending(obj, contracts):
 def deliver(obj, contracts):
     contract_obj = obj['erp'].model('giscedata.polissa')
     groups = zip(*(iter(contracts),)*50)
-    for idx,group in enumerate(groups[:1]):
+    for idx,group in enumerate(groups):
 	print '%d/%d' % (idx,len(groups))
         group = list(group)
         for period, contract_ids in groupby_period(pending(obj, group)):
