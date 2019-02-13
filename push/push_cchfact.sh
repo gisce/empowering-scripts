@@ -1,4 +1,4 @@
-. ~/Documentos/conf/empowering_vars.sh
+. ~/conf/empowering_vars.sh
 export PATH=~/bin:$PATH
 
 amoniak enqueue-cchfact
