@@ -1,4 +1,4 @@
 . ~/conf/empowering_vars.sh
 export PATH=~/bin:$PATH
 
-amoniak enqueue-cchval
+/home/erp/src/amoniak/.venv/bin/amoniak enqueue-cchval

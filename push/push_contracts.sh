@@ -1,4 +1,4 @@
 . ~/conf/empowering_vars.sh
 export PATH=~/bin:$PATH
 
-amoniak enqueue-contracts
+/home/erp/src/amoniak/.venv/bin/amoniak enqueue-contracts

@@ -55,13 +55,13 @@ def erp(ctx):
 @click.pass_context
 @click.argument('filename', type=click.Path(exists=True))
 def enable_partner(ctx, filename):
-    enable_emp_partner(ctx.obj['erp'], list_from_file(filename)
+    enable_emp_partner(ctx.obj['erp'], list_from_file(filename))
 
 @erp.command()
 @click.pass_context
 @click.argument('filename', type=click.Path(exists=True))
-def enable_contract(ctx, ids, filename):
-    enable_emp_contract(ctx.obj['erp'], list_from_file(filename)
+def enable_contract(ctx, filename):
+    enable_emp_contract(ctx.obj['erp'], list_from_file(filename))
 
 if __name__ == '__main__':
     erp(obj={'config': config})
