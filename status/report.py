@@ -15,22 +15,31 @@ config = {
             'user': os.getenv('PEEK_USER', None),
             'password': os.getenv('PEEK_PASSWORD', None)
         },
+    'emp':
+        {
+            'url': os.getenv('EMPOWERING_URL', None),
+            'key': os.getenv('EMPOWERING_KEY_FILE', None),
+            'cert': os.getenv('EMPOWERING_CERT_FILE', None),
+            'company_id': os.getenv('EMPOWERING_COMPANY_ID', None),
+            'username': os.getenv('EMPOWERING_USERNAME', None),
+            'password': os.getenv('EMPOWERING_PASSWORD', None)
+        },
     'docs': {
-        'uri': 'https://docsapi.helpscout.net/v1',
-        'key': ''
+        'uri': os.getenv('HELPSCOUT_DOCS_URI', None),
+        'key': os.getenv('HELPSCOUT_DOCS_KEY', None)
         },
     'api': {
-        'uri': 'https://api.helpscout.net/v1',
-        'key': 'your_key'
+        'uri': os.getenv('HELPSCOUT_API_URI', None),
+        'key': os.getenv('HELPSCOUT_API_KEY', None)
         },
     'mandrill': {
-        'key': 'your_key',
-        'senders': ['info@somenergia.coop'],
-        'query': 'subject:\"Benvinguda\" OR subject:\"Bienvenida\"' 
+        'key': os.getenv('MANDRILL_API_KEY', None),
+        'senders': [os.getenv('MANDRILL_API_SENDER', None)],
+        'query': 'subject:\"Informe energético personalizado\" OR subject:\"Informe energètic personalitzat\"' 
         }
     }
 
-mailbox_id = 55857
+mailbox_id = os.getenv('HELPSCOUT_MAILBOX_ID', None)
 
 class HelpScout(object):
 
@@ -143,7 +152,15 @@ def get_active(O):
     partner_obj = O.model('res.partner')
     return len(partner_obj.search([('empowering_token', '!=', None)])) 
 
-# Deliver status
+# Execution status
+def get_exec_status(E):
+    now = datetime.now()
+    prev = now + relativedelta.relativedelta(months=-1)
+    now_str = '%04d%02d' % (now.year, now.month)
+    prev_str = '%04d%02d' % (prev.year, prev.month)
+    ots = ['OT101', 'OT103','OT201', 'OT401']
+    return [(ot,E.get_ot_status(ot, prev_str, now_str)[-1]) for ot in ots]
+
 def get_deliver_status(O):
     log_obj = O.model('empowering.customize.profile.channel.log')
     now = datetime.now().strftime('%Y-%m-%d')
@@ -160,19 +177,22 @@ O = erppeek.Client(config['erp']['uri'],
                config['erp']['password'])
 
 
+E = Empowering(config['emp'], debug=False)
 HS = HelpScout(config)
 mconfig = config['mandrill']
 M = Mandrill(mconfig['key'])
 
 # Non-formatted output
 end = datetime.now() 
-start = end - timedelta(days=7)
+start = end - timedelta(days=7) 
 end_str = end.strftime('%Y-%m-%d')
 start_str = start.strftime('%Y-%m-%d')
 
 # Statistics 
 # OpenERP
 result_o = get_deliver_status(O) 
+# Empowering
+ots = get_exec_status(E)
 # HelpScout
 result_hs = HS.get_reports([str(mailbox_id)], start, end, ['current'])[0]['current']
 # Mandrill
@@ -182,22 +202,25 @@ result_m['sent'] = result_m['sent']/2 ## FIX DUE notification forwarding
 print '#INFOENERGIA WEEKLY REPORT (from {start_str} to {end_str})'.format(**locals()) 
 
 print "## Summary"
-# NOTE: Temporary disable till reviewed
-#print "Contracts enabled: %d\n" % get_enabled(O)
-#print "Contracts active: %d\n" % get_active(O)
+print "Contracts enabled: %d\n" % get_enabled(O)
+print "Contracts active: %d\n" % get_active(O)
 print "Delivered reports from (%s) to (%s): %d" % (result_o[0], result_o[1], result_o[2])
-#print "### Helpscout\n"
+print "### Helpscout\n"
 print "totalConversations: %d\n" % result_hs['totalConversations'] 
 print "conversationsCreated: %d\n" % result_hs['conversationsCreated'] 
 print "conversationsPerDay: %d\n" % result_hs['conversationsPerDay']
 print "### Mandrill\n"
 print "Sent: %d\n" % result_m['sent']
 print "Open: %d\n" % result_m['unique_opens']
-print "Average open: %0.2f %%\n" % 0
 #print "Average open: %0.2f %%\n" % ((result_m['unique_opens']*1.0/result_m['sent'])*100.00)
 #print "Clicks: %d\n" % result_m['unique_clicks']
 #print "Average Clicks: %0.2f %%\n" % ((result_m['unique_clicks']*1.0/result_m['sent'])*100.00)
-#
+
+print "## Details"
+print "Last execution status:\n" 
+for ot,r in ots:
+   print "* %s: %s %s %02.f\n" % (ot, r['started_at'], r['finished_at'], r['progress']) 
+
 print "## Helpscout"
 print "totalConversations: %d\n" % result_hs['totalConversations'] 
 print "conversationsCreated: %d\n" % result_hs['conversationsCreated'] 
@@ -210,7 +233,6 @@ print "Rejects: %d\n" % result_m['rejects']
 print "Soft_bounces: %d\n" % result_m['soft_bounces']
 print "Hard_bounces: %d\n" % result_m['hard_bounces']
 print "Open: %d\n" % result_m['unique_opens']
-print "Average open: %0.2f %%\n" % 0
 #print "Average open: %0.2f %%\n" % ((result_m['unique_opens']*1.0/result_m['sent'])*100.00)
 #print "Clicks: %d\n" % result_m['unique_clicks']
 #print "Average Clicks: %0.2f %%\n" % ((result_m['unique_clicks']*1.0/result_m['sent'])*100.00)
