@@ -14,7 +14,10 @@ def list_from_file(path, cast):
 
     with open(path, 'r') as csvfile:
         reader = csv.reader(csvfile)
-        return [cast(row[0]) for row in reader]
+        contract_list = []
+        for row in reader:
+            contract_list.append(int(row[0]))
+        return contract_list
 
 def get_partners(obj, contracts_id):
     partners_id = []
