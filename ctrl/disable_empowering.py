@@ -18,7 +18,7 @@ def list_from_file(path, cast):
 
 def disable_emp_contracts(obj, contracts):
     contracts_id = obj.GiscedataPolissa.search([('name', 'in', contracts)])
-    obj.GiscedataPolissa.write(contracts_id, {'empowering_profile_id': False})
+    obj.GiscedataPolissa.write(contracts_id, {'empowering_profile_id': False, 'emp_allow_send_data': False, 'emp_allow_recieve_mail_infoenergia': False})
 
     cups_id = obj.GiscedataCupsPs.search([('polissa_polissa', 'in', contracts_id)])
     obj.GiscedataCupsPs.write(cups_id, {'empowering': False})
